@@ -3,10 +3,22 @@ module.exports = function (schema, options) {
     if (options && options.message) {
         message = options.message;
     }
+
+    var indexes = schema.indexes(); // [ [{paths}, {options}], ...]
+    indexes = Object.keys(indexes).reduce(function (p, key) {
+        Object.keys(indexes[key][0]).forEach(function (path) {
+            p[path] = p[path] || {};
+            Object.keys(indexes[key][1]).forEach(function (optionKey) {
+                p[path][optionKey] = indexes[key][1][optionKey];
+            });
+        });
+        return p;
+    }, {}); // transform into { path: {options} }
+
     schema.eachPath(function (path, schemaType) {
-        if (schemaTypeHasUniqueIndex(schemaType)) {
+        if (indexes[path].unique) {
             var validator = buildUniqueValidator(path);
-            message = buildMessage(schemaType.options.unique, message);
+            message = buildMessage(schemaType.options.unique || indexes[path].unique, message);
             schemaType.validate(validator, message);
         }
     });
@@ -14,10 +26,6 @@ module.exports = function (schema, options) {
 
 function buildMessage(uniqueOption, message){
     return typeof uniqueOption === 'string' ? uniqueOption : message;
-}
-
-function schemaTypeHasUniqueIndex(schemaType) {
-    return schemaType._index && schemaType._index.unique;
 }
 
 function buildUniqueValidator(path) {
