@@ -19,16 +19,16 @@ describe('Mongoose Unique Validator Plugin', function () {
 
                 user.save(function () {
                     duplicateUser.save(function (err) {
-
+                        console.log('err', err.errors.username.kind);
                         user.remove(function () {
                             duplicateUser.remove(function () {
                                 expect(err.errors.username.message).toBe('Error, expected `username` to be unique. Value: `JohnSmith`');
-                                expect(err.errors.username.type).toBe('user defined');
+                                expect(err.errors.username.kind).toBe('user defined');
                                 expect(err.errors.username.path).toBe('username');
                                 expect(err.errors.username.value).toBe('JohnSmith');
 
                                 expect(err.errors.email.message).toBe('Error, expected `email` to be unique. Value: `john.smith@gmail.com`');
-                                expect(err.errors.email.type).toBe('user defined');
+                                expect(err.errors.email.kind).toBe('user defined');
                                 expect(err.errors.email.path).toBe('email');
                                 expect(err.errors.email.value).toBe('john.smith@gmail.com');
 
@@ -103,7 +103,7 @@ describe('Mongoose Unique Validator Plugin', function () {
 
     describe('when a custom error message is passed', function () {
 
-        var User = mongoose.model('UserErrorMessage', getUserSchema().plugin(uniqueValidator, { message: 'Path: {PATH}, value: {VALUE}, type: {TYPE}' }));
+        var User = mongoose.model('UserErrorMessage', getUserSchema().plugin(uniqueValidator, { message: 'Path: {PATH}, value: {VALUE}, kind: {TYPE}' }));
 
         it('a custom message error is thrown for fields with a unique index when present', function (done) {
             var user = getDuplicateUser(User);
@@ -114,13 +114,13 @@ describe('Mongoose Unique Validator Plugin', function () {
 
                     user.remove(function () {
                         duplicateUser.remove(function () {
-                            expect(err.errors.username.message).toBe('Path: username, value: JohnSmith, type: user defined');
-                            expect(err.errors.username.type).toBe('user defined');
+                            expect(err.errors.username.message).toBe('Path: username, value: JohnSmith, kind: user defined');
+                            expect(err.errors.username.kind).toBe('user defined');
                             expect(err.errors.username.path).toBe('username');
                             expect(err.errors.username.value).toBe('JohnSmith');
 
-                            expect(err.errors.email.message).toBe('Path: email, value: john.smith@gmail.com, type: user defined');
-                            expect(err.errors.email.type).toBe('user defined');
+                            expect(err.errors.email.message).toBe('Path: email, value: john.smith@gmail.com, kind: user defined');
+                            expect(err.errors.email.kind).toBe('user defined');
                             expect(err.errors.email.path).toBe('email');
                             expect(err.errors.email.value).toBe('john.smith@gmail.com');
 
@@ -147,12 +147,12 @@ describe('Mongoose Unique Validator Plugin', function () {
                     user.remove(function () {
                         duplicateUser.remove(function () {
                             expect(err.errors.username.message).toBe('Username is already used.');
-                            expect(err.errors.username.type).toBe('user defined');
+                            expect(err.errors.username.kind).toBe('user defined');
                             expect(err.errors.username.path).toBe('username');
                             expect(err.errors.username.value).toBe('JohnSmith');
 
                             expect(err.errors.email.message).toBe('It already exists.');
-                            expect(err.errors.email.type).toBe('user defined');
+                            expect(err.errors.email.kind).toBe('user defined');
                             expect(err.errors.email.path).toBe('email');
                             expect(err.errors.email.value).toBe('john.smith@gmail.com');
 
